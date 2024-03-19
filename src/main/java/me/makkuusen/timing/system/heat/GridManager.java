@@ -72,6 +72,7 @@ public class GridManager {
         TaskChain<?> chain = TimingSystem.newChain();
         for (Driver driver : startPositions) {
             chain.sync(() -> {
+                if (driver.getHeat().getHeatState() != HeatState.RACING) chain.abortChain();
                 startPlayerFromGrid(driver.getTPlayer().getUniqueId());
                 if (setStartTime) {
                     driver.setStartTime(TimingSystem.currentTime);

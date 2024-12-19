@@ -70,6 +70,9 @@ public class TrackRegions {
             if (region instanceof TrackPolyRegion trackPolyRegion) {
                 trackPolyRegion.updateRegion(((Polygonal2DRegion) selection).getPoints());
             }
+            if (region instanceof TrackRectRegion trackRectRegion) {
+                trackRectRegion.updateRegion(((Polygonal2DRegion) selection).getPoints());
+            }
             if (isTrackBoundaryChange(region.getRegionType())) {
                 track.setDateChanged();
             }

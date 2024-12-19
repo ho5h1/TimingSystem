@@ -19,15 +19,19 @@ import me.makkuusen.timing.system.timetrial.TimeTrialFinish;
 import me.makkuusen.timing.system.track.Track;
 import me.makkuusen.timing.system.track.editor.TrackEditor;
 import me.makkuusen.timing.system.track.locations.TrackLocation;
+import me.makkuusen.timing.system.track.regions.TrackRectRegion;
 import me.makkuusen.timing.system.track.regions.TrackPolyRegion;
 import me.makkuusen.timing.system.track.regions.TrackRegion;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
+import org.bukkit.util.Vector;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -235,7 +239,9 @@ public class Tasks {
         int maxZ = max.getBlockZ() + 1;
 
 
-        if (region instanceof TrackPolyRegion polyRegion) {
+        if (region instanceof TrackRectRegion rectRegion) {
+            drawRectRegion(rectRegion, player, particle);
+        } else if (region instanceof TrackPolyRegion polyRegion) {
             drawPolyRegion(polyRegion, player, particle);
         } else {
 
@@ -287,6 +293,26 @@ public class Tasks {
         for (int i = 0; i < distance - 1; i++) {
             p.subtract(x, y, z);
             player.spawnParticle(particle, p, 1);
+        }
+    }
+
+    private void drawRectRegion(TrackRectRegion rectRegion, Player player, Particle particle) {
+        World world = rectRegion.getSpawnLocation().getWorld();
+        List<Location> bottom = new ArrayList<Location>();
+        bottom.add(rectRegion.getLeft().toLocation(world));
+        bottom.add(rectRegion.getRight().toLocation(world));
+        Vector offset = rectRegion.getDirVec().clone().multiply(rectRegion.getMaxDist());
+        bottom.add(bottom.get(1).clone().add(offset));
+        bottom.add(bottom.get(0).clone().add(offset));
+        double height = rectRegion.getThird().getY() - rectRegion.getLeft().getY();
+        List<Location> top = new ArrayList<Location>();
+        for (int i = 0; i < 4; ++i) {
+            top.add(bottom.get(i).clone().add(0, height, 0));
+        }
+        for (int i = 0; i < 4; ++i) {
+            drawLine(player, particle, bottom.get(i), top.get(i));
+            drawLine(player, particle, bottom.get(i), bottom.get((i + 1) & 3));
+            drawLine(player, particle, top.get(i), top.get((i + 1) & 3));
         }
     }
 

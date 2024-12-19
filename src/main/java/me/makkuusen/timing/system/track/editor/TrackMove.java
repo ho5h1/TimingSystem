@@ -1,6 +1,7 @@
 package me.makkuusen.timing.system.track.editor;
 
 import com.sk89q.worldedit.math.BlockVector2;
+
 import me.makkuusen.timing.system.ApiUtilities;
 import me.makkuusen.timing.system.LeaderboardManager;
 import me.makkuusen.timing.system.TimingSystem;
@@ -9,6 +10,7 @@ import me.makkuusen.timing.system.theme.Text;
 import me.makkuusen.timing.system.theme.messages.Success;
 import me.makkuusen.timing.system.track.Track;
 import me.makkuusen.timing.system.track.locations.TrackLocation;
+import me.makkuusen.timing.system.track.regions.TrackRectRegion;
 import me.makkuusen.timing.system.track.regions.TrackPolyRegion;
 import me.makkuusen.timing.system.track.regions.TrackRegion;
 import net.kyori.adventure.text.Component;
@@ -58,6 +60,15 @@ public class TrackMove {
                     newPoints.add(getNewBlockVector2(b, offset));
                 }
                 polyRegion.updateRegion(newPoints);
+            }
+
+            if (region instanceof TrackRectRegion rectRegion) {
+                var oldPoints = rectRegion.getPointList();
+                List<BlockVector2> newPoints = new ArrayList<>();
+                for (BlockVector2 b : oldPoints) {
+                    newPoints.add(getNewBlockVector2(b, offset));
+                }
+                rectRegion.updateRegion(newPoints);
             }
         }
         Bukkit.getScheduler().runTaskAsynchronously(TimingSystem.getPlugin(), LeaderboardManager::updateAllFastestTimeLeaderboard);

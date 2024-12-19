@@ -22,6 +22,7 @@ import me.makkuusen.timing.system.timetrial.TimeTrialController;
 import me.makkuusen.timing.system.tplayer.TPlayer;
 import me.makkuusen.timing.system.track.*;
 import me.makkuusen.timing.system.track.regions.TrackCuboidRegion;
+import me.makkuusen.timing.system.track.regions.TrackRectRegion;
 import me.makkuusen.timing.system.track.regions.TrackPolyRegion;
 import me.makkuusen.timing.system.track.regions.TrackRegion;
 import net.kyori.adventure.text.Component;
@@ -481,7 +482,16 @@ public class ApiUtilities {
     public static boolean isRegionMatching(TrackRegion trackRegion, Region selection) {
         if (trackRegion instanceof TrackCuboidRegion && selection instanceof CuboidRegion) {
             return true;
-        } else return trackRegion instanceof TrackPolyRegion && selection instanceof Polygonal2DRegion;
+        } else if (selection instanceof Polygonal2DRegion polySelection) {
+            int points = polySelection.getPoints().size();
+            if (trackRegion instanceof TrackPolyRegion && points != 3) {
+                return true;
+            }
+            if (trackRegion instanceof TrackRectRegion && points == 3) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static final List<String> rejectedWords = Arrays.asList("random", "randomunfinished", "r", "cancel", "c", "help");

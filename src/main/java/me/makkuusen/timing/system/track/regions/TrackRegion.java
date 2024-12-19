@@ -79,7 +79,7 @@ public abstract class TrackRegion {
     }
 
     public enum RegionShape {
-        POLY, CUBOID
+        POLY, CUBOID, RECT
     }
 
 }

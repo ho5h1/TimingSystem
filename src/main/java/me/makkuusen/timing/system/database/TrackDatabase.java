@@ -5,6 +5,7 @@ import co.aikar.idb.DbRow;
 import co.aikar.taskchain.TaskChain;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.math.BlockVector2;
+import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Polygonal2DRegion;
 import com.sk89q.worldedit.regions.Region;
 import me.makkuusen.timing.system.*;
@@ -21,6 +22,7 @@ import me.makkuusen.timing.system.track.locations.TrackLeaderboard;
 import me.makkuusen.timing.system.track.locations.TrackLocation;
 import me.makkuusen.timing.system.track.options.TrackOption;
 import me.makkuusen.timing.system.track.regions.TrackCuboidRegion;
+import me.makkuusen.timing.system.track.regions.TrackRectRegion;
 import me.makkuusen.timing.system.track.regions.TrackPolyRegion;
 import me.makkuusen.timing.system.track.regions.TrackRegion;
 import me.makkuusen.timing.system.track.tags.TrackTag;
@@ -240,15 +242,20 @@ public interface TrackDatabase {
                     continue;
                 }
 
-                if (region.getString("regionShape") != null && TrackRegion.RegionShape.POLY.name().equalsIgnoreCase(region.getString("regionShape"))) {
+                var regionType = region.getString("regionShape");
+                if (regionType == null || TrackRegion.RegionShape.CUBOID.name().equalsIgnoreCase(regionType)) {
+                    trackRegion = new TrackCuboidRegion(region);
+                } else {
                     var pointRows = TimingSystem.getTrackDatabase().selectRegionPoints(region.getInt("id"));
                     List<BlockVector2> points = new ArrayList<>();
                     for (DbRow pointData : pointRows) {
                         points.add(BlockVector2.at(pointData.get("x"), pointData.get("z")));
                     }
-                    trackRegion = new TrackPolyRegion(region, points);
-                } else {
-                    trackRegion = new TrackCuboidRegion(region);
+                    if (TrackRegion.RegionShape.POLY.name().equalsIgnoreCase(regionType)) {
+                        trackRegion = new TrackPolyRegion(region, points);
+                    } else {
+                        trackRegion = new TrackRectRegion(region, points);
+                    }
                 }
                 if (trackRegion.getRegionType().equals(TrackRegion.RegionType.START)) {
                     addTrackRegion(trackRegion);
@@ -335,11 +342,20 @@ public interface TrackDatabase {
         String maxP = ApiUtilities.locationToString(maxPLoc);
 
         if (selection instanceof Polygonal2DRegion polySelection) {
-            regionId = TimingSystem.getTrackDatabase().createRegion(trackId, index, minP, maxP, type, TrackRegion.RegionShape.POLY, location);
+            List<BlockVector2> points = polySelection.getPoints();
+            if (points.size() == 3) {
+                regionId = TimingSystem.getTrackDatabase().createRegion(trackId, index, minP, maxP, type, TrackRegion.RegionShape.RECT, location);
+            } else {
+                regionId = TimingSystem.getTrackDatabase().createRegion(trackId, index, minP, maxP, type, TrackRegion.RegionShape.POLY, location);
+            }
             for (BlockVector2 v : polySelection.getPoints()) {
                 TimingSystem.getTrackDatabase().createPoint(regionId, v);
             }
-            return new TrackPolyRegion(regionId, trackId, index, type, location, minPLoc, maxPLoc, polySelection.getPoints());
+            if (points.size() == 3) {
+                return new TrackRectRegion(regionId, trackId, index, type, location, minPLoc, maxPLoc, polySelection.getPoints());
+            } else {
+                return new TrackPolyRegion(regionId, trackId, index, type, location, minPLoc, maxPLoc, polySelection.getPoints());
+            }
 
         } else {
             regionId = TimingSystem.getTrackDatabase().createRegion(trackId, index, minP, maxP, type, TrackRegion.RegionShape.CUBOID, location);

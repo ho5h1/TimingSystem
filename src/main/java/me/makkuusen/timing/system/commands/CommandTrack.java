@@ -135,7 +135,7 @@ public class CommandTrack extends BaseCommand {
         if (timeTrials.getBestFinish(tPlayer) == null) {
             Text.send(commandSender, Info.PLAYER_STATS_BEST_LAP, "%time%", "(-)");
         } else {
-            Text.send(commandSender, Info.PLAYER_STATS_BEST_LAP, "%time%", ApiUtilities.formatAsTime(timeTrials.getBestFinish(tPlayer).getTime()));
+            Text.send(commandSender, Info.PLAYER_STATS_BEST_LAP, "%time%", ApiUtilities.formatAsTimeNoRounding(timeTrials.getBestFinish(tPlayer).getTime()));
         }
         Text.send(commandSender, Info.PLAYER_STATS_FINISHES, "%size%", String.valueOf(timeTrials.getPlayerTotalFinishes(tPlayer)));
         Text.send(commandSender, Info.PLAYER_STATS_ATTEMPTS, "%size%", String.valueOf(timeTrials.getPlayerTotalFinishes(tPlayer) + timeTrials.getPlayerTotalAttempts(tPlayer)));
@@ -329,7 +329,7 @@ public class CommandTrack extends BaseCommand {
                 break;
             }
             TimeTrialFinish finish = track.getTimeTrials().getTopList().get(i);
-            commandSender.sendMessage(theme.getTimesRow(String.valueOf(i + 1), finish.getPlayer().getName(), ApiUtilities.formatAsTime(finish.getTime())));
+            commandSender.sendMessage(theme.getTimesRow(String.valueOf(i + 1), finish.getPlayer().getName(), ApiUtilities.formatAsTimeNoRounding(finish.getTime())));
         }
 
         int pageEnd = (int) Math.ceil(((double) track.getTimeTrials().getTopList().size()) / ((double) itemsPerPage));
@@ -369,7 +369,7 @@ public class CommandTrack extends BaseCommand {
                 break;
             }
             TimeTrialFinish finish = allTimes.get(i);
-            Component row = theme.getTimesRow(String.valueOf(i + 1), ApiUtilities.formatAsTime(finish.getTime()), ApiUtilities.niceDate(finish.getDate()));
+            Component row = theme.getTimesRow(String.valueOf(i + 1), ApiUtilities.formatAsTimeNoRounding(finish.getTime()), ApiUtilities.niceDate(finish.getDate()));
             if (finish.hasCheckpointTimes()) {
                 row = theme.getCheckpointHovers(finish, track.getTimeTrials().getBestFinish(tPlayer), row);
             }
@@ -430,7 +430,7 @@ public class CommandTrack extends BaseCommand {
             }
             TimeTrialFinish finish = allTimes.get(i);
             Track track = TrackDatabase.getTrackById(finish.getTrack()).get();
-            Component row = theme.getTimesRow(String.valueOf(i + 1), ApiUtilities.formatAsTime(finish.getTime()), track.getDisplayName(), ApiUtilities.niceDate(finish.getDate()));
+            Component row = theme.getTimesRow(String.valueOf(i + 1), ApiUtilities.formatAsTimeNoRounding(finish.getTime()), track.getDisplayName(), ApiUtilities.niceDate(finish.getDate()));
             if (finish.hasCheckpointTimes()) {
                 row = theme.getCheckpointHovers(finish, track.getTimeTrials().getBestFinish(tPlayer), row);
             }

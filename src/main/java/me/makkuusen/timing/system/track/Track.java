@@ -92,7 +92,7 @@ public class Track {
         List<Component> loreToSet = new ArrayList<>();
 
         loreToSet.add(Text.get(tPlayer, Gui.POSITION, "%pos%", getTimeTrials().getCachedPlayerPosition(tPlayer) == -1 ? "(-)" : String.valueOf(getTimeTrials().getCachedPlayerPosition(tPlayer))));
-        loreToSet.add(Text.get(tPlayer, Gui.BEST_TIME, "%time%", getTimeTrials().getBestFinish(tPlayer) == null ? "(-)" : ApiUtilities.formatAsTime(getTimeTrials().getBestFinish(tPlayer).getTime())));
+        loreToSet.add(Text.get(tPlayer, Gui.BEST_TIME, "%time%", getTimeTrials().getBestFinish(tPlayer) == null ? "(-)" : ApiUtilities.formatAsTimeNoRounding(getTimeTrials().getBestFinish(tPlayer).getTime())));
         loreToSet.add(Text.get(tPlayer, Gui.TOTAL_FINISHES, "%total%", String.valueOf(getTimeTrials().getPlayerTotalFinishes(tPlayer))));
         loreToSet.add(Text.get(tPlayer, Gui.TOTAL_ATTEMPTS, "%total%", String.valueOf(getTimeTrials().getPlayerTotalFinishes(tPlayer) + getTimeTrials().getPlayerTotalAttempts(tPlayer))));
         loreToSet.add(Text.get(tPlayer, Gui.TIME_SPENT, "%time%", ApiUtilities.formatAsTimeSpent(getTimeTrials().getPlayerTotalTimeSpent(tPlayer))));

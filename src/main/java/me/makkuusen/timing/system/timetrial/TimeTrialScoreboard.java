@@ -78,7 +78,7 @@ public class TimeTrialScoreboard {
 
         lines.add(Component.text(PlainTextComponentSerializer.plainText().serialize(Text.get(tPlayer, ScoreBoard.FINISHES))).color(tPlayer.getTheme().getSecondary()).append(Component.text((totalAttempts != 0 ? totalFinishes + "/" + totalAttempts + " (" + percentage + "%)" : "(-)"))).color(color));
         lines.add(Component.text(PlainTextComponentSerializer.plainText().serialize(Text.get(tPlayer, ScoreBoard.AVERAGE_TIME))).color(tPlayer.getTheme().getSecondary()).append(Component.text((averageTime != -1 ? ApiUtilities.formatAsTimeNoRounding(averageTime) : "(-)"))).color(tPlayer.getTheme().getWarning()));
-        lines.add(Component.text(PlainTextComponentSerializer.plainText().serialize(Text.get(tPlayer, ScoreBoard.BEST_TIME))).color(tPlayer.getTheme().getSecondary()).append(Component.text((bestTime != -1 ? ApiUtilities.formatAsTime(bestTime) : "(-)"))).color(tPlayer.getTheme().getSuccess()));
+        lines.add(Component.text(PlainTextComponentSerializer.plainText().serialize(Text.get(tPlayer, ScoreBoard.BEST_TIME))).color(tPlayer.getTheme().getSecondary()).append(Component.text((bestTime != -1 ? ApiUtilities.formatAsTimeNoRounding(bestTime) : "(-)"))).color(tPlayer.getTheme().getSuccess()));
         lines.add(Component.empty());
         int count = timeTrialSession.getTimeTrialFinishes().size();
 

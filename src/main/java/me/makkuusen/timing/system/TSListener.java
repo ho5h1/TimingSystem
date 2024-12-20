@@ -1,6 +1,7 @@
 package me.makkuusen.timing.system;
 
 import com.destroystokyo.paper.event.server.ServerTickStartEvent;
+
 import me.makkuusen.timing.system.api.events.driver.DriverPassCheckpointEvent;
 import me.makkuusen.timing.system.boatutils.BoatUtilsManager;
 import me.makkuusen.timing.system.boatutils.BoatUtilsMode;
@@ -22,11 +23,13 @@ import me.makkuusen.timing.system.tplayer.TPlayer;
 import me.makkuusen.timing.system.track.Track;
 import me.makkuusen.timing.system.track.editor.TrackEditor;
 import me.makkuusen.timing.system.track.options.TrackOption;
+import me.makkuusen.timing.system.track.regions.TrackRectRegion;
 import me.makkuusen.timing.system.track.regions.TrackRegion;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
@@ -47,8 +50,10 @@ import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -57,6 +62,7 @@ public class TSListener implements Listener {
 
     static TimingSystem plugin;
     static Set<UUID> inPits = new HashSet<>();
+    static Map<UUID, Location> lastPosition = new HashMap<>();
 
     @EventHandler
     public void onTick(ServerTickStartEvent e) {
@@ -442,6 +448,10 @@ public class TSListener implements Listener {
                     if (track_.isTimeTrial()) {
                         TimeTrial timeTrial = new TimeTrial(track_, TSDatabase.getPlayer(player.getUniqueId()));
                         timeTrial.playerStartingTimeTrial();
+                        if (region instanceof TrackRectRegion rectRegion) {
+                            int t = rectRegion.passTime(lastPosition.get(player.getUniqueId()), player.getLocation());
+                            timeTrial.setStartOffset(t);
+                        }
                         TimeTrialController.elytraProtection.remove(player.getUniqueId());
                         TimeTrialController.lastTimeTrialTrack.put(player.getUniqueId(), track_);
                     }
@@ -449,6 +459,12 @@ public class TSListener implements Listener {
                 PlayerRegionData.instanceOf(player).getEntered().add(regionId);
             }
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    public void onPlayerMoveEventLog(PlayerMoveEvent e) {
+        Player player = e.getPlayer();
+        lastPosition.put(player.getUniqueId(), player.getLocation());
     }
 
     @EventHandler
@@ -475,6 +491,10 @@ public class TSListener implements Listener {
             for (var r : startRegions) {
                 if (r.contains(player.getLocation())) {
                     if (timeTrial.getLatestCheckpoint() != 0) {
+                        if (r instanceof TrackRectRegion rectRegion) {
+                            int t = rectRegion.passTime(lastPosition.get(player.getUniqueId()), player.getLocation());
+                            timeTrial.setEndOffset(t);
+                        }
                         timeTrial.playerRestartMap();
                         return;
                     }
@@ -484,6 +504,10 @@ public class TSListener implements Listener {
             for (var r : endRegions) {
                 if (r.contains(player.getLocation())) {
                     if (timeTrial.getLatestCheckpoint() != 0) {
+                        if (r instanceof TrackRectRegion rectRegion) {
+                            int t = rectRegion.passTime(lastPosition.get(player.getUniqueId()), player.getLocation());
+                            timeTrial.setEndOffset(t);
+                        }
                         timeTrial.playerEndedMap();
                         return;
                     }

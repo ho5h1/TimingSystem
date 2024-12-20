@@ -36,6 +36,8 @@ public class TimeTrial {
     private final Track track;
     private Instant startTime;
     private long startDelta;
+    private int startOffset;
+    private int endOffset;
     private ArrayList<Instant> checkpoints;
     @Getter
     private boolean lagStart = false;
@@ -130,6 +132,18 @@ public class TimeTrial {
         return lagStart;
     }
 
+    public void setStartOffset(int t) {
+        startOffset = t;
+    }
+
+    public void setEndOffset(int t) {
+        endOffset = t;
+    }
+
+    public long getFinishTime(Instant endTime) {
+        return ApiUtilities.getRoundedToTick(getTimeSinceStart(endTime)) + startOffset - endOffset;
+    }
+
     public void playerPassingLagStart() {
         Player player = tPlayer.getPlayer();
         if (tPlayer.getSettings().isVerbose() && (player.isOp() || player.hasPermission("timingsystem.packs.trackadmin"))) {
@@ -200,9 +214,9 @@ public class TimeTrial {
         Player player = tPlayer.getPlayer();
 
         if (validateFinish(player)) {
-            long timeTrialTime = ApiUtilities.getRoundedToTick(getTimeSinceStart(endTime));
+            long timeTrialTime = getFinishTime(endTime);
             saveAndAnnounceFinish(player, timeTrialTime);
-            ApiUtilities.msgConsole(player.getName() + " finished " + track.getDisplayName() + " with a time of " + ApiUtilities.formatAsTime(timeTrialTime));
+            ApiUtilities.msgConsole(player.getName() + " finished " + track.getDisplayName() + " with a time of " + ApiUtilities.formatAsTimeNoRounding(timeTrialTime));
         }
         TimeTrialController.timeTrials.remove(player.getUniqueId());
     }
@@ -212,15 +226,17 @@ public class TimeTrial {
         Player player = tPlayer.getPlayer();
 
         if (validateFinish(player)){
-            long timeTrialTime = ApiUtilities.getRoundedToTick(getTimeSinceStart(endTime));
+            long timeTrialTime = getFinishTime(endTime);
             saveAndAnnounceFinish(player, timeTrialTime);
-            ApiUtilities.msgConsole(player.getName() + " finished " + track.getDisplayName() + " with a time of " + ApiUtilities.formatAsTime(timeTrialTime));
+            ApiUtilities.msgConsole(player.getName() + " finished " + track.getDisplayName() + " with a time of " + ApiUtilities.formatAsTimeNoRounding(timeTrialTime));
         }
 
         if (!track.isOpen() && !tPlayer.getSettings().isOverride()) {
             TimeTrialController.timeTrials.remove(player.getUniqueId());
         } else {
+            int offset = endOffset;
             resetTimeTrial();
+            startOffset = offset;
         }
     }
 
@@ -263,7 +279,7 @@ public class TimeTrial {
         if (bestFinish == null) {
             //First finish
             finish = newBestFinish(player, timeTrialTime, -1);
-            finishMessage = Text.get(player, Info.TIME_TRIAL_FIRST_FINISH,"%track%", track.getDisplayName(), "%time%", ApiUtilities.formatAsTime(timeTrialTime), "%pos%", String.valueOf(track.getTimeTrials().getPlayerTopListPosition(tPlayer)));
+            finishMessage = Text.get(player, Info.TIME_TRIAL_FIRST_FINISH,"%track%", track.getDisplayName(), "%time%", ApiUtilities.formatAsTimeNoRounding(timeTrialTime), "%pos%", String.valueOf(track.getTimeTrials().getPlayerTopListPosition(tPlayer)));
             finishMessage = tPlayer.getTheme().getCheckpointHovers(finish, finishMessage);
         } else if (timeTrialTime < bestFinish.getTime()) {
 
@@ -273,20 +289,20 @@ public class TimeTrial {
                 var oldPos = recordTrack.getTimeTrials().getCachedPlayerPosition(tPlayer);
                 var oldFinish = bestFinish;
                 finish = newBestFinish(player, timeTrialTime, oldFinish.getTime());
-                finishMessage = Text.get(player, Info.TIME_TRIAL_NEW_RECORD, "%track%", track.getDisplayName(), "%time%", ApiUtilities.formatAsTime(timeTrialTime), "%delta%", ApiUtilities.formatAsPersonalGap(oldFinish.getTime() - timeTrialTime), "%oldPos%", oldPos.toString(), "%pos%", recordTrack.getTimeTrials().getPlayerTopListPosition(tPlayer).toString());
+                finishMessage = Text.get(player, Info.TIME_TRIAL_NEW_RECORD, "%track%", track.getDisplayName(), "%time%", ApiUtilities.formatAsTimeNoRounding(timeTrialTime), "%delta%", ApiUtilities.formatAsPersonalGapNoRounding(oldFinish.getTime() - timeTrialTime), "%oldPos%", oldPos.toString(), "%pos%", recordTrack.getTimeTrials().getPlayerTopListPosition(tPlayer).toString());
                 finishMessage = tPlayer.getTheme().getCheckpointHovers(finish, oldFinish, finishMessage);
             } else {
                 //New personal best
                 var oldPos = track.getTimeTrials().getCachedPlayerPosition(tPlayer);
                 var oldFinish = bestFinish;
                 finish = newBestFinish(player, timeTrialTime, oldFinish.getTime());
-                finishMessage = Text.get(player, Info.TIME_TRIAL_NEW_RECORD, "%track%", track.getDisplayName(), "%time%", ApiUtilities.formatAsTime(timeTrialTime), "%delta%", ApiUtilities.formatAsPersonalGap(oldFinish.getTime() - timeTrialTime), "%oldPos%", oldPos.toString(), "%pos%", track.getTimeTrials().getPlayerTopListPosition(tPlayer).toString());
+                finishMessage = Text.get(player, Info.TIME_TRIAL_NEW_RECORD, "%track%", track.getDisplayName(), "%time%", ApiUtilities.formatAsTimeNoRounding(timeTrialTime), "%delta%", ApiUtilities.formatAsPersonalGapNoRounding(oldFinish.getTime() - timeTrialTime), "%oldPos%", oldPos.toString(), "%pos%", track.getTimeTrials().getPlayerTopListPosition(tPlayer).toString());
                 finishMessage = tPlayer.getTheme().getCheckpointHovers(finish, oldFinish, finishMessage);
             }
         } else {
             //Finish no improvement
             finish = callTimeTrialFinishEvent(player, timeTrialTime, bestFinish.getTime(), false);
-            finishMessage = Text.get(player, Info.TIME_TRIAL_FINISH, "%track%", track.getDisplayName(), "%time%", ApiUtilities.formatAsTime(timeTrialTime), "%delta%", ApiUtilities.formatAsPersonalGap(timeTrialTime - bestFinish.getTime()));
+            finishMessage = Text.get(player, Info.TIME_TRIAL_FINISH, "%track%", track.getDisplayName(), "%time%", ApiUtilities.formatAsTimeNoRounding(timeTrialTime), "%delta%", ApiUtilities.formatAsPersonalGapNoRounding(timeTrialTime - bestFinish.getTime()));
             finishMessage = tPlayer.getTheme().getCheckpointHovers(finish, track.getTimeTrials().getBestFinish(tPlayer), finishMessage);
 
         }

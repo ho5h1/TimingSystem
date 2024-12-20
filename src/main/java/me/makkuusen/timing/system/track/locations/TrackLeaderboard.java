@@ -76,7 +76,7 @@ public class TrackLeaderboard extends TrackLocation {
                 String time;
                 try {
                     playerName = topTen.get(i - 1).getPlayer().getName();
-                    time = ApiUtilities.formatAsTime(topTen.get(i - 1).getTime());
+                    time = ApiUtilities.formatAsTimeNoRounding(topTen.get(i - 1).getTime());
                 } catch (IndexOutOfBoundsException e) {
                     playerName = "Empty";
                     time = "None";

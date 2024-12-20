@@ -78,6 +78,19 @@ public class TrackRectRegion extends TrackRegion {
         }
     }
 
+    public int passTime(Location last, Location curr) {
+        // only called if contains(curr) returns true
+        if (last == null) {
+            return 0;
+        } else {
+            double distanceAfter = curr.toVector().clone().subtract(right).dot(dirVec);
+            double distanceBefore = last.toVector().clone().subtract(right).dot(dirVec);
+            double ticks = distanceBefore / (distanceBefore - distanceAfter);
+            ticks = Math.min(1, Math.max(0, ticks));
+            return (int) ((1 - ticks) * 50);
+        }
+    }
+
     public boolean isDefined() {
         return true;
     }
